@@ -1,24 +1,10 @@
 .Rproj.user
 .Rhistory
 .RData
-Input/Raw/m3d.mssm.edu/E_coli_v4_Build_6/README
-Input/Raw/m3d.mssm.edu/norm
-Input/Genes
-Input/RDB8.1
-Out1/RDB8.1
-Out2/RDB8.1
-Out2/Prodoric
-Out2/RegulonDB
+Input
+Out1
+Out2
 *~
-Input/Makefile.mk
-Out2/Makefile.mk
-Out1/Makefile.mk
-Input/log
-Out1/log
-Out2/log
-Input/gmon.out
-Out1/gmon.out
-Out2/gmon.out
 gmon.out
 log
 Expression
@@ -35,6 +21,6 @@ ToSubmmit/bmc_article
 Pipeline2.pdf
 Reference PDF.pdf
 ._relationships.xlsx
-Reachability/Prodoric
-Reachability/RegulonDB
+Reachability
 Makefile.mk
+DrawFig3/arc-freq.txt
