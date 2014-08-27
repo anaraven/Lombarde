@@ -1,9 +1,12 @@
 .Rproj.user
 .Rhistory
 .RData
-Input
-Out1
-Out2
+Input/
+Out1/
+Out2/
+!code/Out1/
+!code/Out2/
+!code/Input/
 *~
 gmon.out
 log
