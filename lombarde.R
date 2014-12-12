@@ -35,7 +35,7 @@ asp.file   <- opts$options$asp.out
 options(mc.cores=opts$options$cores, digits=10, scipen=3)
 
 # Step one: read input graph
-g  <- read.graph(net.file, format="ncol", names=T, direct=T, weights="yes")
+g  <- read.graph(net.file, format="ncol", names=TRUE, direct=TRUE, weights="yes")
 if(! opts$options$wgt) {
   message("changing weights")
   E(g)$orig   <- E(g)$weight
@@ -44,7 +44,7 @@ if(! opts$options$wgt) {
 g.name <- V(g)$name
 
 # Step two: read coexpressions
-coexps <- read.table(coexp.file, as.is=T, col.names=c("from", "to", "weight"))
+coexps <- read.table(coexp.file, as.is=TRUE, col.names=c("from", "to", "weight"))
 
 # keep only coexpressions involving valid vertices (those in `g` graph)
 is.valid.obs <- coexps$from %in% g.name & coexps$to %in% g.name # & coexps$from < coexps$to
@@ -68,13 +68,13 @@ path.extremes <- function(i, shared_pred, coexps) {
 
   unlist(lapply(names(shared_pred[[i]]),
 		function(r,v) list(c(r, v$from), c(r, v$to)), coexps[i,]),
-	 recursive=F, use.names=F)
+	 recursive=FALSE, use.names=FALSE)
 }
 
 # determine the non-redundant set of pairs of vertices that determine the
 # relevant paths to evaluate
 expl.path <- unique(unlist(mclapply(1:N, path.extremes, shared_pred, coexps),
-			   recursive=F, use.names=F))
+			   recursive=FALSE, use.names=FALSE))
 
 # change the representation from a list of (from,to) pairs to a two level tree.
 # Recycle the varaible to save memory
@@ -96,18 +96,18 @@ if(!is.null(asp.file)) {
   vid <- 1
   for(i in 1:N){
     for(r in names(shared_pred[[i]])){
-      cat("explanation",r,unlist(coexps[i,1:2]),"\n", file=asp.file, append=T)
+      cat("explanation",r,unlist(coexps[i,1:2]),"\n", file=asp.file, append=TRUE)
       vv1 <- expl.path[[r]][[ coexps[[i,1]] ]]
       vv2 <- expl.path[[r]][[ coexps[[i,2]] ]]
       for(p1 in vv1) {
         for(p2 in vv2) {
-          cat("vshape", vid, unlist(coexps[i, 1:2]), i, "\n", file=asp.file, append=T)
+          cat("vshape", vid, unlist(coexps[i, 1:2]), i, "\n", file=asp.file, append=TRUE)
           edgelist <- c(p1,p2)
           weights <- get.edge.attribute(g, "weight", edgelist)
           sides <- get.edges(g, edgelist)
           for(j in 1:length(edgelist)) {
             cat("arcInVshape", vid, g.name[sides[j,1]], g.name[sides[j,2]], weights[j], "\n",
-		file=asp.file, append=T)        
+		file=asp.file, append=TRUE)        
           }
           vid <- vid + 1
         }
