@@ -7,7 +7,16 @@ BEGIN {
 	if(!MIN) MIN = 1
 	if(!MAX) MAX = 1000000
 	if(N)    MIN = MAX = N
-	printf "%s\t%s\t%s\t%s\t%s\t%s\n", "out1/eval/Coexpr/PWM/Network/Levels/Base/gl.out", "n_coexp", "n_arcs", "n_valid", "n_vertex", "avg_degree"
+	printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+	    "out1/eval/Coexpr/PWM/Network/Levels/Base/gl.out",
+	    "n_coexp", "n_arcs", "n_valid", "n_vertex", "avg_degree", "n_explanation", "n_vshape"
+}
+
+function print_line() {
+    if(n_coexp>=MIN && n_coexp<=MAX) {
+	printf "%s\t%d\t%d\t%d\t%d\t%5.1f\t%d\t%d\n", FILENAME, n_coexp, n_arcs, n_valid,
+		n_vertex, n_arcs/n_vertex, n_explanation, n_vshape
+    }
 }
 
 FILENAME==ARGV[1] {
@@ -16,10 +25,13 @@ FILENAME==ARGV[1] {
 }
 
 FILENAME!=last_file {
+	print_line()
 	n_arcs   = 0
 	n_valid  = 0
 	n_coexp  = 0
 	n_vertex = 0
+	n_explanation = 0
+	n_vshape = 0
 	delete arc
 	delete vertex
 }
@@ -40,12 +52,20 @@ FILENAME!=last_file {
 	vertex[$4] = 1
 }
 
-/explanation/ && n_coexp>=MIN && n_coexp<=MAX {
-	printf "%s\t%d\t%d\t%d\t%d\t%5.1f\n", FILENAME, n_coexp, n_arcs, n_valid, n_vertex, n_arcs/n_vertex
-}
-
-/explanation/ {
-	n_coexp++
+/vshape/ {
+	if(n_coexp != $5)
+	    print_line()
+	n_coexp = $5
+	n_vshape++
 	last_file=FILENAME
 }
 
+/explanation/ {
+	n_explanation++
+}
+
+END {
+	print_line()
+}
+
+# TODO: FIX: last `explanation` is not counted properly
