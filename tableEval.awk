@@ -8,7 +8,7 @@ BEGIN {
 	if(!MAX) MAX = 1000000
 	if(N)    MIN = MAX = N
 	printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
-	    "out1/eval/Coexpr/PWM/Network/Levels/Base/gl.out",
+	    "eval/Coexpr/PWM/Network/Levels/Base/gl.out",
 	    "n_coexp", "n_arcs", "n_valid", "n_vertex", "avg_degree", "n_explanation", "n_vshape"
 }
 
