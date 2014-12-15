@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- XML Author: Andres Aravena -->
+<!-- Dyliss Team, INRIA, Rennes. -->
+<!-- Distributed under LGPLv2 License. -->
+<program>
+  <head>
+    <name>Lombarde</name>
+        <version>2.0</version>
+    <doc>
+      <title>Lombarde</title>
+      <description>
+        <text lang="en">Prunes a regulatory graph based on experimental associations between operons</text>
+      </description>
+      <doclink>http://lombarde.genouest.org/</doclink>
+      <authors>Andres Aravena (andres.aravena@dim.uchile.cl)</authors>
+      <reference>Andres Aravena, Vicente Acuna, Carito Guziolowski, Max Ostrowski, Torsten Schaub, Damien Eveillard, Alejandro Maass, Anne Siegel.
+      Deciphering transcriptional regulations in response to environmental stresses with a logic-based model of causality. Submitted
+      </reference>
+      <!-- sourcelink>http://TODO/</sourcelink -->
+    </doc>
+    <category>Regulation:Reconstruction:Lombarde</category>
+    <command>lombarde.sh</command>
+  </head>
+
+  <parameters>
+
+    <paragraph>
+      <prompt>Description</prompt>
+      <name>desc</name>
+      <parameters>
+        <parameter issimple="1">
+          <name>description</name>
+          <prompt>none</prompt>
+          <type>
+            <datatype>
+              <class>String</class>
+            </datatype>
+          </type>
+          <interface type="form">
+            <div xmlns="http://www.w3.org/1999/xhtml">
+<emph>Lombarde</emph> models transcriptional regulatory networks in a scheme that integrates putative transcriptional regulatory networks with co-expression data to determine the simplest and most confident sub-network that explains the observed co-expressions.
+<p/>The output will be a subgraph of the putative transcriptional regulatory network that satisfies the Lombarde criteria: each pair of co-expressed vertices should share a common regulator (either direct or via a regulation cascade), among all the common regulators select the most confident ones.
+                          </div>
+          </interface>
+        </parameter>
+      </parameters>
+    </paragraph>
+    
+    <paragraph>
+      <prompt>Input data</prompt>
+      <name>input</name>
+      <parameters>
+        <parameter ismandatory="1" issimple="1">
+          <prompt lang="en">Coexpression input</prompt>
+          <name>coexp</name>
+          <comment>
+              <text lang="en">
+              Type in, paste or upload from your computer a list of tab-separated associated pairs.
+
+              Vertices can represent genes or operons. Each line of the co-expression data should contain the identifiers of two vertices whose correlation or mutual information is deemed significative. Optionally a third column can specify the correlation/mutual information value.
+                </text>
+          </comment>
+<example>
+opR0953 opR0392 0.0469677888323291
+opR0864 opR0855 0.0434345532643927
+opR0864 opR0859 0.0533798886461222
+opR0864 opR0232 0.0424418039344284
+opR0864 opR1151 0.0455191718679774
+opR0864 opR1168 0.0432651046130433
+opR0864 opR1156 0.0418922522503093
+opR0864 opR1150 0.0411005898507457
+opR0855 opR0859 0.400877847609346
+opR0855 opR1150 0.0405688167384692
+opR0859 opR1150 0.0450381356519214
+opR1533 opR1583 0.0413389767602719
+opR1533 opR0037 0.0437600746436421
+opR0220 opR0985 0.0570992300043156
+opR0232 opR1151 0.0475098852984323
+opR0232 opR1168 0.0404828124711963
+opR1151 opR1168 0.0414119289366522
+opR1151 opR1156 0.0720743300088502
+opR1151 opR1150 0.0464306741662416
+opR1168 opR1156 0.0650984635807787
+opR1156 opR1150 0.0450713968707926
+opR0985 opR0817 0.0408249943030833
+opR0037 opR1174 0.0546766288103268
+opR0037 opR0243 0.0595521977228505
+</example>
+          <type>
+            <datatype>
+            <class>ncol</class>
+            <superclass>AbstractText</superclass>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>4</argpos>
+        </parameter>
+
+        <parameter ismandatory="1" issimple="1">
+          <name>net</name>
+          <prompt lang="en">Network file</prompt>
+          <comment>
+           <text lang="en">
+            Type in, paste or upload from your computer an initial weighted graph to prune. Format is "From", "To", "Weight", fields are separated by whitespace.
+            The input putative TRN is a tab separated file. Each line contains the id of the regulator vertex, the id of the regulatoed one and the weight of the arc. More confident arcs have lower weights.
+           </text>
+          </comment>
+<example>
+opR0243 opR0037 1
+opR0953 opR0243 1
+opR0953 opR1533 5
+opR0453 opR0985 1
+opR0453 opR0037 6
+opR0453 opR1583 1
+opR0453 opR0862 1
+opR0453 opR1156 2
+opR0453 opR0459 1
+opR0392 opR0953 5
+opR0392 opR0037 6
+opR0392 opR0459 1
+opR0512 opR1151 2
+opR0512 opR0037 5
+opR0512 opR1583 3
+opR0512 opR0114 1
+opR0512 opR0295 0
+opR0512 opR0511 1
+opR1174 opR0985 1
+opR1174 opR0243 8
+opR1174 opR0953 8
+opR1174 opR0453 3
+opR1174 opR0392 4
+opR1174 opR0512 4
+opR1174 opR1151 8
+opR1583 opR0243 7
+opR1583 opR0953 8
+opR1583 opR0392 1
+opR1583 opR1174 3
+opR1583 opR0817 0
+opR1072 opR1533 0
+opR1072 opR0093 0
+opR1072 opR0855 7
+opR0862 opR0859 1
+opR0862 opR0864 1
+opR0862 opR0855 1
+opR1156 opR0512 1
+opR1156 opR1151 0
+opR1156 opR0232 1
+opR1156 opR1168 0
+opR1156 opR0114 0
+opR1156 opR0295 1
+opR1156 opR1150 2
+opR0114 opR0512 2
+opR0114 opR1174 6
+opR0114 opR1156 7
+opR0114 opR0295 6
+opR0114 opR0220 2
+opR0114 opR0511 1
+opR0295 opR0453 6
+opR0295 opR0037 4
+opR0295 opR1174 2
+opR0459 opR0243 7
+opR0459 opR1533 0
+opR0459 opR0817 7
+opR0817 opR0037 1
+opR0093 opR0953 1
+opR0093 opR0392 6
+opR0093 opR0817 6
+opR0511 opR0512 1
+opR0511 opR1174 5
+opR0511 opR1156 6
+opR0511 opR0295 5
+opR0511 opR0220 1
+</example>
+          <type>
+            <datatype>
+            <class>ncol</class>
+            <superclass>AbstractText</superclass>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>5</argpos>
+        </parameter>
+
+        <parameter>
+          <name>weights</name>
+          <prompt lang="en">Use weights as specified in the file</prompt>
+          <comment>TODO.</comment>
+          <type>
+            <datatype>
+            <class>Boolean</class>
+            </datatype>
+          </type>
+          <vdef>
+            <value>0</value>
+          </vdef>
+          <format>
+            <code proglang="python">( "" , " --wgt" )[ value ]</code>
+          </format>
+          <argpos>2</argpos>
+        </parameter>
+      
+        <parameter>
+          <name>base</name>
+          <prompt lang="en">Base to use in weight conversion</prompt>
+          <comment>TODO.</comment>
+          <type>
+            <datatype>
+              <class>Integer</class>
+            </datatype>
+          </type>
+          <vdef>
+            <value>10</value>
+          </vdef>
+          <precond>
+            <code proglang="python">weights == 1</code>
+          </precond>
+          <format>
+            <code proglang="python">( "" , " -b "+str(value) )[ value ]</code>
+          </format>
+          <argpos>3</argpos>
+        </parameter>
+      </parameters>
+    </paragraph>
+
+    <parameter ishidden="1">
+      <name>ouputredirect</name>
+      <prompt>none, is hidden</prompt>
+      <type>
+        <datatype>
+        <class>String</class>
+        </datatype>
+      </type>
+      <format>
+        <code proglang="python">" -o output.ncol -a lombarde.txt"</code>  
+      </format>
+      <argpos>1</argpos>
+    </parameter>
+
+    <parameter isout="1">
+      <name>outgraph</name>
+      <prompt lang="en">Model output (SBML)</prompt>
+      <type>
+        <datatype>
+            <class>ncol</class>
+            <superclass>AbstractText</superclass>
+        </datatype>
+      </type>
+      <filenames>
+        <code proglang="python">"output.ncol"</code>
+      </filenames>
+    </parameter>
+
+    <parameter isout="1">
+      <name>outsolution</name>
+      <prompt lang="en">Solutions descriptions (to process in ASP)</prompt>
+      <type>
+        <datatype>
+        <class>GenericText</class>
+        <superclass>AbstractText</superclass>
+        </datatype>
+      </type>
+      <filenames>
+        <code proglang="python">"lombarde.txt"</code>
+      </filenames>
+    </parameter>
+  </parameters>
+</program>

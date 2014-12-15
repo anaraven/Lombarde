@@ -15,9 +15,6 @@ if(length(argv) < 3) {
   quit(save = "no", status = 1)
 }
 
-net.file <- "Genes/Prodoric/MEME/g0-5.ncol"
-ops.file <- "RDB8.1/operon_list.clean.txt"
-out.file <- "out.ncol"
 net.file <- argv[1]
 ops.file <- argv[2]
 out.file <- argv[3]

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<program>
+  <head>
+    <name>build_fimo_blast_net</name>
+      <version>1.0</version>
+    <doc>
+      <title>
+      Builds a putative regulatory network from BLAST and MEME/FIMO output
+      </title>
+      <description>
+        <text lang="en">
+        Replaces many vertices by one and keeps only the cheapest arc.
+        </text>
+      </description>
+      <authors>Andres Aravena</authors>
+      <!-- reference>TODO</reference>
+      <sourcelink>http://TODO/</sourcelink -->
+    </doc>
+    <category>Regulation:Reconstruction:Lombarde</category>
+    <command>build_fimo_blast_net.sh</command>
+  </head>
+
+  <parameters>
+    <parameter ismandatory="1" issimple="1">
+      <name>fimo</name>
+      <prompt lang="en">Binding sites predictions by MEME/FIMO</prompt>
+      <comment>Expects FIMO format.</comment>
+      <type>
+        <datatype>
+        <class>GenericText</class>
+        <superclass>AbstractText</superclass>
+        </datatype>
+      </type>
+      <format>
+        <code proglang="python">" " + str(value)</code>
+      </format>
+      <argpos>2</argpos>
+    </parameter>
+
+    <parameter ismandatory="1" issimple="1">
+      <name>blast</name>
+      <prompt lang="en">Blast matching of genes to TF</prompt>
+      <comment>Blast output against a database of known transcription factor coding genes, in tabular format.</comment>
+      <type>
+        <datatype>
+        <class>GenericText</class>
+        <superclass>AbstractText</superclass>
+        </datatype>
+      </type>
+      <format>
+        <code proglang="python">" " + str(value)</code>
+      </format>
+      <argpos>3</argpos>
+    </parameter>
+
+    <parameter ismandatory="1" issimple="1">
+      <name>equiv</name>
+      <prompt lang="en">Equivalence between TF coding genes and PWM</prompt>
+      <comment>
+      A table with the correspondence between Transcription Factors and the motifs that represent their binding sites.
+      </comment>
+      <type>
+        <datatype>
+        <class>GenericText</class>
+        <superclass>AbstractText</superclass>
+        </datatype>
+      </type>
+      <format>
+        <code proglang="python">" " + str(value)</code>
+      </format>
+      <argpos>4</argpos>
+    </parameter>
+
+    <parameter ishidden="1">
+      <name>ouputredirect</name>
+      <prompt>none, is hidden</prompt>
+      <type>
+        <datatype>
+        <class>String</class>
+        </datatype>
+      </type>
+      <format>
+        <code proglang="python">" TRN-genes.ncol"</code>  
+      </format>
+      <argpos>1</argpos>
+    </parameter>
+
+    <parameter isout="1">
+      <name>outgraph</name>
+      <prompt lang="en">Putative TRN (genes)</prompt>
+      <type>
+        <datatype>
+            <class>ncol</class>
+            <superclass>AbstractText</superclass>
+        </datatype>
+      </type>
+      <filenames>
+        <code proglang="python">"TRN-genes.ncol"</code>
+      </filenames>
+    </parameter>
+  </parameters>
+</program>

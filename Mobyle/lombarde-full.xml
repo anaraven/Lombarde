@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- XML Author: Andres Aravena -->
+<!-- Dyliss Team, INRIA, Rennes. -->
+<!-- Distributed under LGPLv2 License. -->
+<program>
+  <head>
+    <name>Complete Lombarde</name>
+        <version>2.0</version>
+    <doc>
+      <title>Lombarde</title>
+      <description>
+        <text lang="en">
+          Uses co-expression data and optimization to choose the most confident part of a 
+          predicted regulatory network.
+        </text>
+      </description>
+      <doclink>http://lombarde.genouest.org/</doclink>
+      <authors>Andres Aravena (andres.aravena@dim.uchile.cl)</authors>
+      <reference>
+        Andres Aravena, Vicente Acuna, Carito Guziolowski, Max Ostrowski,
+        Torsten Schaub, Damien Eveillard, Alejandro Maass, Anne Siegel.
+        Deciphering transcriptional regulations in response to environmental
+        stresses with a logic-based model of causality. (Submitted. Under review)
+      </reference>
+      <!-- sourcelink>http://TODO/</sourcelink -->
+    </doc>
+    <category>Regulation:Reconstruction</category>
+    <command>lombarde-full.sh</command>
+  </head>
+
+  <parameters>
+
+    <paragraph>
+      <prompt>Description</prompt>
+      <name>desc</name>
+      <parameters>
+        <parameter issimple="1">
+          <name>description</name>
+          <prompt>none</prompt>
+          <type>
+            <datatype>
+              <class>String</class>
+            </datatype>
+          </type>
+          <interface type="form">
+            <div xmlns="http://www.w3.org/1999/xhtml">
+              Lombarde models transcriptional regulatory networks in a scheme
+              that integrates putative transcriptional regulatory networks with
+              co-expression data to determine the simplest and most confident
+              sub-network that explains the observed co-expressions.
+              <p/>The output will be a subgraph of the putative transcriptional
+              regulatory network that satisfies the Lombarde criteria: each
+              pair of co-expressed vertices should share a common regulator
+              (either direct or via a regulation cascade), among all the common
+              regulators select the most confident ones.
+            </div>
+          </interface>
+        </parameter>
+      </parameters>
+    </paragraph>
+    
+    <paragraph>
+      <prompt>Input data</prompt>
+      <name>input</name>
+      <parameters>
+
+        <parameter ismandatory="1" issimple="1">
+          <name>fimo</name>
+          <prompt lang="en">Binding sites predictions by MEME/FIMO</prompt>
+          <comment>
+            <text lang="en">
+            Expects FIMO output format: a tab separated file with one line for
+            each binding site prediction. Columns are: pattern name, gene name,
+            start, stop, score, p-value, q-value, matched sequence. Patterns
+            (in the form of PWM) can be obtained from mani sources, including
+            Prodoric (http://www.prodoric.de/). These patterns can be used to
+            determine putative binding sites on each gene promoter region using
+            FIMO tool from the MEME suite.
+            </text>
+          </comment>
+          <type>
+            <datatype>
+              <class>GenericText</class>
+              <superclass>AbstractText</superclass>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>2</argpos>
+        </parameter>
+
+        <parameter ismandatory="1" issimple="1">
+          <name>blast</name>
+          <prompt lang="en">
+            Blast output matching relevant genes to known transcription factors
+          </prompt>
+          <comment>
+            <text lang="en">
+            Blastp output in tabular format (option -m 9) aligning each gene
+            product to a database of known transcription factors. Examples of
+            transcription factors can be found in many sources, including
+            Prodoric (http://www.prodoric.de/). Gene names in column 1
+            should be the same used in the binding site predictions. Column 2
+            contains each transcription factor name, column 11 contains the
+            E-value of the alignment.
+            </text>
+          </comment>
+          <type>
+            <datatype>
+            <class>GenericText</class>
+            <superclass>AbstractText</superclass>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>3</argpos>
+        </parameter>
+
+        <parameter ismandatory="1" issimple="1">
+          <name>equiv</name>
+          <prompt lang="en">
+            Correspondence between transcription factors and binding site motifs
+          </prompt>
+          <comment>
+            <text lang="en">
+            A table with the correspondence between Transcription Factors and
+            the motifs that represent their binding sites. Many transcription
+            factors may bind to sites represnted by the same motif. This table
+            has two columns: the pattern name should be the same as in the FIMO
+            output, the transcription factor name should correspond to the
+            BLAST output.
+            </text>
+          </comment>
+          <type>
+            <datatype>
+            <class>GenericText</class>
+            <superclass>AbstractText</superclass>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>4</argpos>
+        </parameter>
+
+
+        <parameter ismandatory="1" issimple="1">
+          <prompt lang="en">Coexpression input</prompt>
+          <name>coexp</name>
+          <comment>
+            <text lang="en">
+              Type in, paste or upload from your computer a list of
+              tab-separated associated pairs.  Vertices can represent genes or
+              operons. Each line of the co-expression data should contain the
+              identifiers of two vertices whose correlation or mutual
+              information is deemed significative. Optionally a third column
+              can specify the correlation/mutual information value.
+            </text>
+          </comment>
+          <type>
+            <datatype>
+            <class>ncol</class>
+            <superclass>AbstractText</superclass>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>5</argpos>
+        </parameter>
+
+        <parameter ismandatory="1" issimple="1">
+          <name>mLevels</name>
+          <prompt lang="en">Number of discretization levels</prompt>
+          <comment>
+            Regulation predictions have different confidence levels. Lombarde
+            transforms them into discrete values. Choose here the number of
+            levels. Recomended values are between 3 and 10.
+          </comment>
+          <type>
+            <datatype>
+            <class>Integer</class>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>6</argpos>
+        </parameter>
+
+        <parameter ismandatory="1" issimple="1">
+          <name>classes</name>
+          <prompt lang="en">Operon membership</prompt>
+          <comment>
+            Lombarde requires that each gene belongs to a single operon. Please
+            specify here one gene per line. First column is gene name, using
+            the same code as before. Second column is operon name.
+          </comment>
+          <type>
+            <datatype>
+            <class>ncol</class>
+            <superclass>AbstractText</superclass>
+            </datatype>
+          </type>
+          <format>
+            <code proglang="python">" " + str(value)</code>
+          </format>
+          <argpos>7</argpos>
+        </parameter>
+      </parameters>
+    </paragraph> 
+
+    <parameter ishidden="1">
+      <name>ouputredirect</name>
+      <prompt>none, is hidden</prompt>
+      <type>
+        <datatype>
+        <class>String</class>
+        </datatype>
+      </type>
+      <format>
+        <code proglang="python">" output.ncol"</code>  
+      </format>
+      <argpos>1</argpos>
+    </parameter>
+
+    <parameter isout="1">
+      <name>outgraph</name>
+      <prompt lang="en">Model output (SBML)</prompt>
+      <type>
+        <datatype>
+            <class>ncol</class>
+            <superclass>AbstractText</superclass>
+        </datatype>
+      </type>
+      <filenames>
+        <code proglang="python">"output.ncol"</code>
+      </filenames>
+    </parameter>
+
+  </parameters>
+</program>
