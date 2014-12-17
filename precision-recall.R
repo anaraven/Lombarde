@@ -1,6 +1,7 @@
 #!/usr/bin/Rscript --vanilla
 
 library(optparse)
+library(methods)
 library(igraph)
 
 # Argument handling
@@ -18,7 +19,7 @@ option_list <- list(
 )
 
 opt.parser <- OptionParser(option_list = option_list,
-  description="Usage: Rscript --vanilla precision-recall.R gold-standard.ncol test-graph.ncol")
+  description="Alternative usage: Rscript --vanilla precision-recall.R [options] gold-standard.ncol test-graph.ncol ...")
 
 opts <- parse_args(opt.parser, positional_arguments = TRUE)
 
