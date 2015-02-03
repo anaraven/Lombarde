@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript --vanilla
 
+library(methods)
 library(optparse)
 library(igraph)
 library(parallel)
@@ -37,7 +38,7 @@ options(mc.cores=opts$options$cores, digits=10, scipen=3)
 # Step one: read input graph
 g  <- read.graph(net.file, format="ncol", names=TRUE, direct=TRUE, weights="yes")
 if(! opts$options$wgt) {
-  message("changing weights")
+  message("changing weights ",opts$options$base)
   E(g)$orig   <- E(g)$weight
   E(g)$weight <- opts$options$base^(E(g)$weight)
 }
