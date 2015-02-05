@@ -1,9 +1,10 @@
 library(igraph)
-basedir <- "~/RLombarde/Out1/EvalBase"
+basedir <- "~/Documents/RLombarde/Out1/EvalBase"
 
+METHODS = c('aracne','c3','clr','mrnetb')
 NETWORKS = c('RegulonDB','Prodoric')
-LEVELS = c(3, 9)
-BASES = c(1.2, 2, 10)
+LEVELS = c(3, 5, 7, 9)
+BASES = c(1.2, 2, 5, 10)
 MEMES = c('MEME', 'MEME-GS-N', 'MEME-GS-0')
 COEXPS = c('M3D', 'RND1', 'RND2', 'RND3')
 
@@ -45,36 +46,38 @@ png(filename="Prob%03d.png", width=8.5, height=11, units='in', res=200)
 par(mfrow=c(3,2))
 g=list()
 pr=list()
-for(network in NETWORKS) {
-  for(meme in MEMES) {
-    l <- intersect.graphs("~/RLombarde/Input/RDB8.1/gold-std.ncol",
-              paste("~/RLombarde/Input/RDB8.1", network, meme, "g0-3.ncol", sep="/"))
-    V.tot <- l$in.both
-    N.tot <- l$edges
-    for(base in BASES) {
-      for(level in LEVELS) {
-        for(coexp in COEXPS) {
-          g[[coexp]] <- read.table(
-            paste(basedir, coexp, network, meme, level, base, "gl.txt", sep="/"),
-            header=TRUE)
-        }
-        for(lag in c(20, 50, 100, 200, 500, 1000)) {
+for(method in METHODS) {
+  for(network in NETWORKS) {
+    for(meme in MEMES) {
+      l <- intersect.graphs("~/RLombarde/Input/RDB8.1/gold-std.ncol",
+                            paste("~/RLombarde/Input/RDB8.1", network, meme, "g0-3.ncol", sep="/"))
+      V.tot <- l$in.both
+      N.tot <- l$edges
+      for(base in BASES) {
+        for(level in LEVELS) {
           for(coexp in COEXPS) {
-            pr[[coexp]] <- calc.prob(g[[coexp]], lag, N.tot, V.tot)
-            pr[[coexp]][pr[[coexp]]==0] <- NA
+            g[[coexp]] <- read.table(
+              paste(basedir, coexp, network, meme, level, base, "gl.txt", sep="/"),
+              header=TRUE)
           }
-          mi <- min(sapply(pr, min, na.rm=T))
-          ma <- max(sapply(pr, max, na.rm=T))
-          plot( pr[["M3D" ]], log="y", ylab="prob", ylim=c(mi,ma), type="n")
-          lines(pr[["RND1"]], col="red") 
-          lines(pr[["RND2"]], col="red") 
-          lines(pr[["RND3"]], col="red") 
-          points(pr[["M3D"]], cex=0.6)
-          abline(h=0.01)
-          title(paste(network, meme, level, base, "lag", lag))
+          for(lag in c(20, 50, 100, 200, 500, 1000)) {
+            for(coexp in COEXPS) {
+              pr[[coexp]] <- calc.prob(g[[coexp]], lag, N.tot, V.tot)
+              pr[[coexp]][pr[[coexp]]==0] <- NA
+            }
+            mi <- min(sapply(pr, min, na.rm=T))
+            ma <- max(sapply(pr, max, na.rm=T))
+            plot( pr[["M3D" ]], log="y", ylab="prob", ylim=c(mi,ma), type="n")
+            lines(pr[["RND1"]], col="red") 
+            lines(pr[["RND2"]], col="red") 
+            lines(pr[["RND3"]], col="red") 
+            points(pr[["M3D"]], cex=0.6)
+            abline(h=0.01)
+            title(paste(network, meme, level, base, "lag", lag))
+          }
         }
-      }
-    }    
-  }
+      }    
+    }
+  }  
 }
 
