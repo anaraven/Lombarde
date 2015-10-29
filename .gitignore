@@ -29,3 +29,4 @@ Makefile.mk
 DrawFig3/arc-freq.txt
 ._.DS_Store
 .DS_Store
+.ipynb_checkpoints
