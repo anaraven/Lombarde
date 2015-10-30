@@ -1,0 +1,18 @@
+% no python support, data should be pre-processed
+
+% Input: optimExplanation(I,A,B) when explanation I is in Optim(A,B)
+% extern optimExplanation(I,A,B) 
+
+% coexp(X,Y) means that {X,Y} are co-expressed.
+% It is implicit in the definition of optimExplanation(_,X,Y).
+coexp(X,Y) :- optimExplanation(_,X,Y).
+
+% only one explanation is chosen for each {t,t'} in O 
+1{ chosen(I,A,B) : optimExplanation(I,A,B) }1 :- coexp(A,B).
+
+chosen(I) :- chosen(I,_,_).
+
+% minimize the number of regulators
+#minimize {1,I:chosen(I)}.
+#show chosen/1.
+
