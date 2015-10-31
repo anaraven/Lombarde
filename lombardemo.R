@@ -1,46 +1,22 @@
-#!/usr/bin/env Rscript --vanilla
-
 library(methods)
-library(optparse)
 library(igraph)
 library(parallel)
 
-# Argument handling
-option_list <- list(
-  make_option(c("-o", "--out"), help = "Filename of output graph (\"ncol\" format)"),
-  make_option(c("-a", "--asp-out"), help = "Filename of solutions descriptions (to process in ASP)",
-	      dest="asp.out"),
-  make_option(c("-w", "--wgt"), action="store_true", default=FALSE,
-              help="Use weights as specified in the file. Don't recalculate weights."),
-  make_option(c("-b", "--base"), action="store", default=10, type="double",
-              help="Base to use in weight conversion"),
-  make_option(c("-c", "--cores"), action="store", default=detectCores(), type="integer",
-              help="Number of parallel process to run. Default: all cores.")
-)
+coexp.file <- "~/RLombarde/Input/RDB8.1/M3D/pearson/mrnet/10K.ncol"
+net.file   <- "~/RLombarde/Input/RDB8.1/Prodoric/MEME/g0-9.ncol"
+out.file   <- "/dev/stdout"
+asp.file   <- "/dev/stdout"
+change_weights <- TRUE
+base <- 10
 
-opt.parser <- OptionParser(option_list = option_list, 
-  description="Usage: lombarde.R [options] coexp.file net.file")
-
-opts <- parse_args(opt.parser, positional_arguments = TRUE)
-
-argv <- opts$args
-if(length(argv) < 2) {
-  print_help(opt.parser)
-  quit(save = "no", status = 1)
-}
-coexp.file <- argv[1]
-net.file   <- argv[2] 
-out.file   <- opts$options$out
-asp.file   <- opts$options$asp.out
-
-options(mc.cores=opts$options$cores, digits=10, scipen=3)
+options(mc.cores=4, digits=10, scipen=3)
 
 # Step one: read input graph
 g  <- read.graph(net.file, format="ncol", names=TRUE, direct=TRUE, weights="yes")
-if(! opts$options$wgt) {
-  message("changing weights ",opts$options$base)
+if(change_weights) {
+  message("changing weights ",base)
   E(g)$orig   <- E(g)$weight
-  E(g)$weight <- opts$options$base^(E(g)$weight)
+  E(g)$weight <- base^(E(g)$weight)
 }
 g.name <- V(g)$name
 
@@ -64,10 +40,11 @@ shared_pred <- mclapply(1:N, function(i) {
 })
 print(paste("shared_pred",length(shared_pred)))
 
+path.extremes <- function(i, shared_pred, coexps) {
 # this function takes the i-th co-expressed pair of vertices and returns a list
 # with all the pairs of vertices that define paths connecting each common
 # predecesor to both co-expressed vertices.
-path.extremes <- function(i, shared_pred, coexps) {
+
   unlist(lapply(shared_pred[[i]],
 		function(r,v) list(c(r, v$from), c(r, v$to)), coexps[i,]),
 	 recursive=FALSE, use.names=FALSE)
@@ -104,25 +81,28 @@ if(!is.null(out.file)) {
 if(!is.null(asp.file)) {
   cat("n.obs",N,"\n", file=asp.file)
   vid <- 1
+  for(extremes in names(expl.path)) {
+    for(l in 1:length(expl.path[[extremes]])) {
+      edgelist <- as.numeric(E(g, path=expl.path[[extremes]][[l]]))
+      weights <- get.edge.attribute(g, "weight", edgelist)
+      for(j in 1:length(edgelist)) {
+        cat("arcInPath\tp", vid, "\te", edgelist[j],"\t", 
+            weights[j], "\n", file=asp.file, append=TRUE, sep="")
+      }
+      expl.path[[extremes]][[l]] <- vid
+      vid <- vid+1
+    }
+  }
   for(i in 1:N){
     a <- coexps[i,1]
     b <- coexps[i,2]
     for(r in shared_pred[[i]]){
-      cat("explanation",r,a,b,i,"\n", sep="\t",file=asp.file, append=TRUE)
-      vv1 <- expl.path[[paste(r,a)]]
-      vv2 <- expl.path[[paste(r,b)]]
-      for(p1 in vv1) {
-        for(p2 in vv2) {
-          cat("vshape", vid, a, b, i, "\n", file=asp.file, append=TRUE)
-          edgelist <- as.numeric(c(E(g, path=p1),E(g, path=p2)))
-          weights <- get.edge.attribute(g, "weight", edgelist)
-          sides <- get.edges(g, edgelist)
-          for(j in 1:length(edgelist)) {
-            cat("arcInVshape", vid, g.name[sides[j,1]], g.name[sides[j,2]], weights[j], "\n",
-		file=asp.file, append=TRUE)        
-          }
-          vid <- vid + 1
-        }
+      cat("shared",r,a,b,i,"\n", sep="\t",file=asp.file, append=TRUE)
+      for(j in expl.path[[paste(r,a)]]) {
+        cat("path\t",r,"\t",a,"\tp",j,"\n", sep="",file=asp.file, append=TRUE)
+      }
+      for(j in expl.path[[paste(r,b)]]) {
+        cat("path\t",r,"\t",b,"\tp",j,"\n", sep="",file=asp.file, append=TRUE)
       }
     }
   }

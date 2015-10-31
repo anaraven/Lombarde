@@ -51,7 +51,7 @@ coexps <- read.table(coexp.file, as.is=TRUE, col.names=c("from", "to", "weight")
 is.valid.obs <- coexps$from %in% g.name & coexps$to %in% g.name # & coexps$from < coexps$to
 coexps <- coexps[is.valid.obs,]
 N <- nrow(coexps)
-print(paste("N:",N))
+print(c("N",N))
 
 # `W` is the cost of the shortst path betwen each pair of vertices
 W <- shortest.paths(g, mode="out")
@@ -62,12 +62,13 @@ shared_pred <- mclapply(1:N, function(i) {
 			v <- rowSums(W[,unlist(coexps[i,1:2])]);
 			names(which(v==min(v)))
 })
-print(paste("shared_pred",length(shared_pred)))
+print(c("shared_pred",length(shared_pred)))
 
+path.extremes <- function(i, shared_pred, coexps) {
 # this function takes the i-th co-expressed pair of vertices and returns a list
 # with all the pairs of vertices that define paths connecting each common
 # predecesor to both co-expressed vertices.
-path.extremes <- function(i, shared_pred, coexps) {
+
   unlist(lapply(shared_pred[[i]],
 		function(r,v) list(c(r, v$from), c(r, v$to)), coexps[i,]),
 	 recursive=FALSE, use.names=FALSE)
@@ -77,53 +78,51 @@ path.extremes <- function(i, shared_pred, coexps) {
 # relevant paths to evaluate
 expl.path <- unique(unlist(mclapply(1:N, path.extremes, shared_pred, coexps),
 			   recursive=FALSE, use.names=FALSE))
-names(expl.path) <- sapply(expl.path, paste, collapse=" ")
-print(paste("number of extremes:",length(expl.path)))
-# count the number of non-trivial paths
-non.trivial <- sapply(expl.path, function(e) e[1]!=e[2])
-print(table(non.trivial))
+print(c("all arcs",length(expl.path)))
 
-# replace each pair (a,b) for a list of all short-path-a-b
-expl.path <- mcmapply(function(e) {
-  get.all.shortest.paths(g, e[1], e[2], mode="out")$res}, expl.path[non.trivial])
-# now each element of the list is a list of all paths between (a,b) vertices
-# and "a b" is the name of the element.
-# each path is a list of the vertices in the corresponding order
-# which can be transformed into edges with `as.numeric(E(g, path=l))`
+# change the representation from a list of (from,to) pairs to a two level tree.
+# Recycle the varaible to save memory
+expl.path <- split(sapply(expl.path,`[`,2), sapply(expl.path,`[`,1))
+print(c("all,src", length(expl.path)))
+print(expl.path)
 
-npath <- table(sapply(expl.path, length))
-print(paste("number of paths:",sum(as.numeric(names(npath))*npath)))
-print(paste("complexity:", round(sum(log10(as.numeric(names(npath)))*npath))))
-
-if(!is.null(out.file)) {
-  all.edges <- lapply(unlist(expl.path[non.trivial], recursive = F),
-                      function(l) E(g, path=l))
-  write.graph(subgraph.edges(g, unique(unlist(all.edges))), out.file, format="ncol")
-}
-
-if(!is.null(asp.file)) {
-  cat("n.obs",N,"\n", file=asp.file)
-  vid <- 1
-  for(i in 1:N){
-    a <- coexps[i,1]
-    b <- coexps[i,2]
-    for(r in shared_pred[[i]]){
-      cat("explanation",r,a,b,i,"\n", sep="\t",file=asp.file, append=TRUE)
-      vv1 <- expl.path[[paste(r,a)]]
-      vv2 <- expl.path[[paste(r,b)]]
-      for(p1 in vv1) {
-        for(p2 in vv2) {
-          cat("vshape", vid, a, b, i, "\n", file=asp.file, append=TRUE)
-          edgelist <- as.numeric(c(E(g, path=p1),E(g, path=p2)))
-          weights <- get.edge.attribute(g, "weight", edgelist)
-          sides <- get.edges(g, edgelist)
-          for(j in 1:length(edgelist)) {
-            cat("arcInVshape", vid, g.name[sides[j,1]], g.name[sides[j,2]], weights[j], "\n",
-		file=asp.file, append=TRUE)        
-          }
-          vid <- vid + 1
-        }
-      }
-    }
+for(src in names(expl.path)){
+  for(tgt in expl.path[[src]]) {
+    if(src==tgt) next
+    l <- get.all.shortest.paths(g, src, tgt, mode="out")$res
+    print(c(src,tgt))
+    print(l)
   }
 }
+  
+# expl.path <- mclapply(expl.path, lapply, lapply, function(l) {
+#   if(length(l)>1) as.numeric(E(g, path=l)) else numeric()} )
+# 
+# if(!is.null(out.file)) {
+#   write.graph(subgraph.edges(g, unique(unlist(expl.path))), out.file, format="ncol")
+# }
+# 
+# if(!is.null(asp.file)) {
+#   cat("n.obs",N,"\n", file=asp.file)
+#   vid <- 1
+#   for(i in 1:N){
+#     for(r in shared_pred[[i]]){
+#       cat("explanation",r,unlist(coexps[i,1:2]),"\n", file=asp.file, append=TRUE)
+#       vv1 <- expl.path[[r]][[ coexps[[i,1]] ]]
+#       vv2 <- expl.path[[r]][[ coexps[[i,2]] ]]
+#       for(p1 in vv1) {
+#         for(p2 in vv2) {
+#           cat("vshape", vid, unlist(coexps[i, 1:2]), i, "\n", file=asp.file, append=TRUE)
+#           edgelist <- c(p1,p2)
+#           weights <- get.edge.attribute(g, "weight", edgelist)
+#           sides <- get.edges(g, edgelist)
+#           for(j in 1:length(edgelist)) {
+#             cat("arcInVshape", vid, g.name[sides[j,1]], g.name[sides[j,2]], weights[j], "\n",
+# 		file=asp.file, append=TRUE)        
+#           }
+#           vid <- vid + 1
+#         }
+#       }
+#     }
+#   }
+# }
