@@ -103,7 +103,7 @@ if(!is.null(asp.file)) {
   cat("n.obs",N,"\n", file=asp.file)
   vid <- 1
   for(i in 1:N){
-    for(r in shared_pred[[i]]){
+    for(r in names(shared_pred[[i]])){
       cat("explanation",r,unlist(coexps[i,1:2]),"\n", file=asp.file, append=TRUE)
       vv1 <- expl.path[[r]][[ coexps[[i,1]] ]]
       vv2 <- expl.path[[r]][[ coexps[[i,2]] ]]
