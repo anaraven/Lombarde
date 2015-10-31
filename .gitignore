@@ -32,3 +32,5 @@ DrawFig3/arc-freq.txt
 .ipynb_checkpoints
 MixInput
 !code/MixInput/
+NoDiscret
+!code/NoDiscret/

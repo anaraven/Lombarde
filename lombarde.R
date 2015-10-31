@@ -51,7 +51,7 @@ coexps <- read.table(coexp.file, as.is=TRUE, col.names=c("from", "to", "weight")
 is.valid.obs <- coexps$from %in% g.name & coexps$to %in% g.name # & coexps$from < coexps$to
 coexps <- coexps[is.valid.obs,]
 N <- nrow(coexps)
-print(N)
+print(c("N",N))
 
 # `W` is the cost of the shortst path betwen each pair of vertices
 W <- shortest.paths(g, mode="out")
@@ -62,7 +62,7 @@ shared_pred <- mclapply(1:N, function(i) {
 			v <- rowSums(W[,unlist(coexps[i,1:2])]);
 			names(which(v==min(v)))
 })
-print(length(shared_pred))
+print(c("shared_pred", length(shared_pred)))
 
 path.extremes <- function(i, shared_pred, coexps) {
 # this function takes the i-th co-expressed pair of vertices and returns a list
@@ -78,18 +78,18 @@ path.extremes <- function(i, shared_pred, coexps) {
 # relevant paths to evaluate
 expl.path <- unique(unlist(mclapply(1:N, path.extremes, shared_pred, coexps),
 			   recursive=FALSE, use.names=FALSE))
-print(length(expl.path))
+print(c("expl.path", length(expl.path)))
 
 # change the representation from a list of (from,to) pairs to a two level tree.
 # Recycle the varaible to save memory
 expl.path <- split(sapply(expl.path,`[`,2), sapply(expl.path,`[`,1))
-print(length(expl.path))
+print(c("expl.path", length(expl.path)))
 
 
 expl.path <- mcmapply(function(src, targets) mapply(function(tgt) {
   get.all.shortest.paths(g, src, tgt, mode="out")$res
   }, targets, SIMPLIFY=FALSE), names(expl.path), expl.path, SIMPLIFY=FALSE)
-print(length(expl.path))
+print(c("expl.path", length(expl.path)))
 
   
 expl.path <- mclapply(expl.path, lapply, lapply, function(l) {
@@ -103,7 +103,7 @@ if(!is.null(asp.file)) {
   cat("n.obs",N,"\n", file=asp.file)
   vid <- 1
   for(i in 1:N){
-    for(r in names(shared_pred[[i]])){
+    for(r in shared_pred[[i]]){
       cat("explanation",r,unlist(coexps[i,1:2]),"\n", file=asp.file, append=TRUE)
       vv1 <- expl.path[[r]][[ coexps[[i,1]] ]]
       vv2 <- expl.path[[r]][[ coexps[[i,2]] ]]
