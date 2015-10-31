@@ -51,7 +51,7 @@ coexps <- read.table(coexp.file, as.is=TRUE, col.names=c("from", "to", "weight")
 is.valid.obs <- coexps$from %in% g.name & coexps$to %in% g.name # & coexps$from < coexps$to
 coexps <- coexps[is.valid.obs,]
 N <- nrow(coexps)
-print(N)
+print(paste("N:",N))
 
 # `W` is the cost of the shortst path betwen each pair of vertices
 W <- shortest.paths(g, mode="out")
@@ -62,13 +62,12 @@ shared_pred <- mclapply(1:N, function(i) {
 			v <- rowSums(W[,unlist(coexps[i,1:2])]);
 			names(which(v==min(v)))
 })
-print(length(shared_pred))
+print(paste("shared_pred",length(shared_pred)))
 
-path.extremes <- function(i, shared_pred, coexps) {
 # this function takes the i-th co-expressed pair of vertices and returns a list
 # with all the pairs of vertices that define paths connecting each common
 # predecesor to both co-expressed vertices.
-
+path.extremes <- function(i, shared_pred, coexps) {
   unlist(lapply(shared_pred[[i]],
 		function(r,v) list(c(r, v$from), c(r, v$to)), coexps[i,]),
 	 recursive=FALSE, use.names=FALSE)
@@ -78,39 +77,44 @@ path.extremes <- function(i, shared_pred, coexps) {
 # relevant paths to evaluate
 expl.path <- unique(unlist(mclapply(1:N, path.extremes, shared_pred, coexps),
 			   recursive=FALSE, use.names=FALSE))
-print(length(expl.path))
+names(expl.path) <- sapply(expl.path, paste, collapse=" ")
+print(paste("number of extremes:",length(expl.path)))
+# count the number of non-trivial paths
+non.trivial <- sapply(expl.path, function(e) e[1]!=e[2])
+print(table(non.trivial))
 
-# change the representation from a list of (from,to) pairs to a two level tree.
-# Recycle the varaible to save memory
-expl.path <- split(sapply(expl.path,`[`,2), sapply(expl.path,`[`,1))
-print(length(expl.path))
+# replace each pair (a,b) for a list of all short-path-a-b
+expl.path <- mcmapply(function(e) {
+  get.all.shortest.paths(g, e[1], e[2], mode="out")$res}, expl.path[non.trivial])
+# now each element of the list is a list of all paths between (a,b) vertices
+# and "a b" is the name of the element.
+# each path is a list of the vertices in the corresponding order
+# which can be transformed into edges with `as.numeric(E(g, path=l))`
 
-
-expl.path <- mcmapply(function(src, targets) mapply(function(tgt) {
-  get.all.shortest.paths(g, src, tgt, mode="out")$res
-  }, targets, SIMPLIFY=FALSE), names(expl.path), expl.path, SIMPLIFY=FALSE)
-print(length(expl.path))
-
-  
-expl.path <- mclapply(expl.path, lapply, lapply, function(l) {
-  if(length(l)>1) as.numeric(E(g, path=l)) else numeric()} )
+npath <- table(sapply(expl.path, length))
+print(paste("number of paths:",sum(as.numeric(names(npath))*npath)))
+print(paste("complexity:", round(sum(log10(as.numeric(names(npath)))*npath))))
 
 if(!is.null(out.file)) {
-  write.graph(subgraph.edges(g, unique(unlist(expl.path))), out.file, format="ncol")
+  all.edges <- lapply(unlist(expl.path[non.trivial], recursive = F),
+                      function(l) E(g, path=l))
+  write.graph(subgraph.edges(g, unique(unlist(all.edges))), out.file, format="ncol")
 }
 
 if(!is.null(asp.file)) {
   cat("n.obs",N,"\n", file=asp.file)
   vid <- 1
   for(i in 1:N){
+    a <- coexps[i,1]
+    b <- coexps[i,2]
     for(r in shared_pred[[i]]){
-      cat("explanation",r,unlist(coexps[i,1:2]),"\n", file=asp.file, append=TRUE)
-      vv1 <- expl.path[[r]][[ coexps[[i,1]] ]]
-      vv2 <- expl.path[[r]][[ coexps[[i,2]] ]]
+      cat("explanation",r,a,b,i,"\n", sep="\t",file=asp.file, append=TRUE)
+      vv1 <- expl.path[[paste(r,a)]]
+      vv2 <- expl.path[[paste(r,b)]]
       for(p1 in vv1) {
         for(p2 in vv2) {
-          cat("vshape", vid, unlist(coexps[i, 1:2]), i, "\n", file=asp.file, append=TRUE)
-          edgelist <- c(p1,p2)
+          cat("vshape", vid, a, b, i, "\n", file=asp.file, append=TRUE)
+          edgelist <- as.numeric(c(E(g, path=p1),E(g, path=p2)))
           weights <- get.edge.attribute(g, "weight", edgelist)
           sides <- get.edges(g, edgelist)
           for(j in 1:length(edgelist)) {
