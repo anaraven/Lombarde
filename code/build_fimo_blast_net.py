@@ -5,7 +5,7 @@ from math import log
 from getopt import getopt,GetoptError
 
 try:
-  opts, argv = getopt(sys.argv[1:], "lds", ["log","dump","sum"])
+  opts, argv = getopt(sys.argv[1:], "lds1", ["log","dump","sum","single"])
 except GetoptError as err:
   # print help information and exit:
   print(err) # will print something like "option -a not recognized"
@@ -14,6 +14,7 @@ except GetoptError as err:
 dump = False
 log_transform = False
 sum_values = False
+single = False
 for o, a in opts:
   if o == "-d":
     dump = True
@@ -21,6 +22,8 @@ for o, a in opts:
     log_transform = True
   elif o == "-s":
     sum_values = True
+  elif o == "-1":
+    single = True
   else:
     assert False, "unhandled option"
 
@@ -97,7 +100,9 @@ for gene_id,xp in BLAST.iteritems():
     targets = FIMO.get(motif_id, {})
     #print "#", gene_id, motif_id, p, len(targets)
     for tgt_gene,V in targets.iteritems():
-      if sum_values:
+      if single:
+        print "%s\t%s\t%G" % (gene_id, tgt_gene, 1-(1-p)*(1-V))
+      elif sum_values:
         print "%s\t%s\t%G" % (gene_id, tgt_gene, p+V)
       else:
         print "%s\t%s\t%G\t%G" % (gene_id, tgt_gene, p, V)
