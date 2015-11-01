@@ -24,6 +24,6 @@ gene_names <- rownames(M)
 expdata <- t(M)
 rm(M)
 
-mim <- build.mim(expdata, estimator=opts$estimator, disc=opts$discretization)
+mim <- minet(expdata, estimator=opts$estimator, disc=opts$discretization)
 
-save(mim, opts, file=opts$out)
+write.table(mim, file=opts$out)
