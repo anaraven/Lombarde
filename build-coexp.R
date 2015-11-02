@@ -46,5 +46,5 @@ net <- miAlgorithm(mim, opts$method)
 o <- order(net$MI, decreasing=TRUE)
 N <- min(opts$n, length(o))
 net <- net[o[1:N],]
-write.table(net, file=opts$out, quote=F, sep="\t")
+write.table(net, file=opts$out, quote=F, sep="\t", row.names=F, col.names=F)
 

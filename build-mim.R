@@ -22,6 +22,6 @@ opts <- parse_args(opt.parser)
 M <- read.table(opts$input, header=T, row.names=1)
 M <- t(M)
 
-mim <- minet(M, estimator=opts$estimator, disc=opts$discretization, quote=F, sep="\t")
+mim <- minet(M, estimator=opts$estimator, disc=opts$discretization)
 
 write.table(mim, file=opts$out, quote=F, sep="\t")
