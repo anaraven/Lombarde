@@ -19,11 +19,9 @@ opt.parser <- OptionParser(option_list = option_list,
 
 opts <- parse_args(opt.parser)
 
-M <- read.table(opts$input, header=T, sep="\t", quote="", row.names=1)
-gene_names <- rownames(M)
-expdata <- t(M)
-rm(M)
+M <- read.table(opts$input, header=T, row.names=1)
+M <- t(M)
 
-mim <- minet(expdata, estimator=opts$estimator, disc=opts$discretization)
+mim <- minet(M, estimator=opts$estimator, disc=opts$discretization, quote=F, sep="\t")
 
-write.table(mim, file=opts$out)
+write.table(mim, file=opts$out, quote=F, sep="\t")
