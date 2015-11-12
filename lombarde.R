@@ -116,6 +116,7 @@ if(!is.null(asp.file)) {
   cat("n.obs",N,"\n", file=asp.file)
   vid <- 1
   for(i in 1:N){
+# <<<<<<< HEAD
     a <- coexps[i,1]
     b <- coexps[i,2]
     for(r in shared_pred[[i]]){
@@ -137,6 +138,12 @@ if(!is.null(asp.file)) {
             vid <- vid + 1
         }
       } else
+# =======
+#     for(r in shared_pred[[i]]){
+#       cat("explanation",r,unlist(coexps[i,1:2]),"\n", file=asp.file, append=TRUE)
+#       vv1 <- expl.path[[r]][[ coexps[[i,1]] ]]
+#       vv2 <- expl.path[[r]][[ coexps[[i,2]] ]]
+# >>>>>>> feature/no_discret
       for(p1 in vv1) {
         for(p2 in vv2) {
           cat("vshape", vid, a, b, i, "\n", file=asp.file, append=TRUE)
