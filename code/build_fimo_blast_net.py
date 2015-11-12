@@ -62,6 +62,7 @@ if dump:
       print "FIMO", motif_id, gene_id, p
 
 tf_motif = dict() # keys are protein_id, values are motif_id
+# TF-motif file should have 2 columns: Motif, TF-Protein
 with file(tf_file, "r") as fp:
   for row in csv.reader(fp, delimiter="\t"):
     if len(row)<2: continue
@@ -69,6 +70,7 @@ with file(tf_file, "r") as fp:
     tf_motif[row[1]] = row[0]
 
 # we read BLASTP output in tabular format
+# file format is gene ID, TF-protein, identity, length, positives, gaps, q.start, q.end, s.start, s.end, e-value, bit-score
 BLAST = dict() # keys are gene_id, values are (motif_id, score) if the gene codes a TF
 with file(blast_file, "r") as fp:
   for row in csv.reader(fp, delimiter="\t"):

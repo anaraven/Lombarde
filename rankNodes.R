@@ -1,4 +1,6 @@
 #! /usr/local/bin/Rscript --vanilla
+# ranks each gene for a series of NCOL files
+
 library(optparse)
 library(igraph)
 

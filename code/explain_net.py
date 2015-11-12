@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# here we build the initial putative network and compare it to the gold-standard
+# reference, to determine why there are missing arcs in the prediction
+
 import csv, sys
 from math import log
 from getopt import getopt,GetoptError
