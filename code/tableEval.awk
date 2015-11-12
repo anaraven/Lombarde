@@ -1,5 +1,7 @@
 #!/usr/bin/awk -f
 
+# Analysis of "OUT" files, the ones including each v-shape
+
 # Usage:
 # ./tableEval.awk Input/RDB8.1/gold-std.ncol Out1/EvalBase/*/RegulonDB/MEME*/9/*/gl.out | tr / '\t' | cut -f 3-7,9-
 
