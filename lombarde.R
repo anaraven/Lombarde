@@ -81,7 +81,7 @@ names(expl.path) <- sapply(expl.path, paste, collapse=" ")
 cat("number of extremes:",length(expl.path),"\n")
 # count the number of non-trivial paths
 non.trivial <- sapply(expl.path, function(e) e[1]!=e[2])
-print(sum(non.trivial))
+cat("non trivial ones:",sum(non.trivial),"\n")
 
 # replace each pair (a,b) for a list of all short-path-a-b
 expl.path <- mcmapply(function(e) {
