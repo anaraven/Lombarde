@@ -33,6 +33,9 @@ net.file   <- argv[2]
 out.file   <- opts$options$out
 asp.file   <- opts$options$asp.out
 
+id <- out.file
+if(is.null(id)) id <- asp.file
+
 options(mc.cores=opts$options$cores, digits=10, scipen=3)
 
 # Step one: read input graph
@@ -51,7 +54,7 @@ coexps <- read.table(coexp.file, as.is=TRUE, col.names=c("from", "to", "weight")
 is.valid.obs <- coexps$from %in% g.name & coexps$to %in% g.name # & coexps$from < coexps$to
 coexps <- coexps[is.valid.obs,]
 N <- nrow(coexps)
-cat("N:",N,"\n")
+cat(id,"N:",N,"\n")
 
 # `W` is the cost of the shortst path betwen each pair of vertices
 W <- shortest.paths(g, mode="out")
@@ -62,7 +65,7 @@ shared_pred <- mclapply(1:N, function(i) {
 			v <- rowSums(W[,unlist(coexps[i,1:2])]);
 			names(which(v==min(v)))
 })
-cat("shared_pred:",length(shared_pred),"\n")
+cat(id,"shared_pred:",length(shared_pred),"\n")
 
 # this function takes the i-th co-expressed pair of vertices and returns a list
 # with all the pairs of vertices that define paths connecting each common
@@ -78,10 +81,10 @@ path.extremes <- function(i, shared_pred, coexps) {
 expl.path <- unique(unlist(mclapply(1:N, path.extremes, shared_pred, coexps),
 			   recursive=FALSE, use.names=FALSE))
 names(expl.path) <- sapply(expl.path, paste, collapse=" ")
-cat("number of extremes:",length(expl.path),"\n")
+cat(id,"number of extremes:",length(expl.path),"\n")
 # count the number of non-trivial paths
 non.trivial <- sapply(expl.path, function(e) e[1]!=e[2])
-cat("non trivial ones:",sum(non.trivial),"\n")
+cat(id,"non trivial ones:",sum(non.trivial),"\n")
 
 # replace each pair (a,b) for a list of all short-path-a-b
 expl.path <- mcmapply(function(e) {
@@ -92,11 +95,11 @@ expl.path <- mcmapply(function(e) {
 # which can be transformed into edges with `as.numeric(E(g, path=l))`
 
 npath <- table(sapply(expl.path, length))
-cat("number of paths:",sum(as.numeric(names(npath))*npath),"\n")
-cat("complexity:", round(sum(log10(as.numeric(names(npath)))*npath)),"\n")
+cat(id,"number of paths:",sum(as.numeric(names(npath))*npath),"\n")
+cat(id,"complexity:", round(sum(log10(as.numeric(names(npath)))*npath)),"\n")
 
 if(!is.null(out.file)) {
-  cat("Writing output to", out.file,"\n")
+  cat(id,"Writing output","\n")
   all.edges <- lapply(unlist(expl.path[non.trivial], recursive = F),
                       function(l) E(g, path=l))
   write.graph(subgraph.edges(g, unique(unlist(all.edges))), out.file, format="ncol")
@@ -112,7 +115,7 @@ print.arcs <- function(edgelist) {
 }
 
 if(!is.null(asp.file)) {
-  cat("Writing structure to", asp.file,"\n")
+  cat(id,"Writing structure to", asp.file,"\n")
   cat("n.obs",N,"\n", file=asp.file)
   vid <- 1
   for(i in 1:N){
