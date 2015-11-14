@@ -1,7 +1,6 @@
 #!/usr/bin/Rscript --vanilla
 
 library(optparse)
-library(pbapply)
 
 # Argument handling
 option_list <- list()
@@ -28,6 +27,6 @@ net$V1 <- o[net$V1]
 net$V2 <- o[net$V2]
 net <- net[!is.na(net$V1) & !is.na(net$V2) & net$V1!=net$V2,]
 idx <- paste(net$V1, net$V2)
-z <- pblapply(1:ncol(net), function(i) tapply(net[,i], idx, min))
+z <- lapply(1:ncol(net), function(i) tapply(net[,i], idx, min))
 net2 <- do.call(cbind.data.frame,z)
 write.table(net2, out.file, quote=FALSE, sep=" ", row.names=FALSE, col.names=FALSE)
