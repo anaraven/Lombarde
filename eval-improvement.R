@@ -8,6 +8,8 @@ library(igraph)
 option_list <- list(
   make_option(c("-u","--undirected"), action="store_true", default=FALSE,
               help="Input graphs are undirected"),
+  make_option(c("-p","--pretty"), action="store_true", default=FALSE,
+              help="print pretty names"),
   make_option(c("--ref","-r"), action="store", 
               help="Reference network of validated arcs"),
   make_option(c("-i", "--ini"), action="store", 
@@ -56,20 +58,28 @@ gs.edges <- split(gs.v.names[gs.edges[,2]], gs.v.names[gs.edges[,1]])
 
 
 library(knitr)
-nom <- gs.file
+if(opts$options$pretty) {
+    nom <- "Validated" 
+} else {
+    nom <- sub(".ncol","",gs.file)
+}
 n.vert  <-  vcount(gs)
 n.edges <-  ecount(gs)
 in.gold <-  ecount(gs)
-prec    <-  100
-c.edges <-  100
-c.in.gold <-  100
+prec    <-  0
+c.edges <-  0
+c.in.gold <- 0
 
 ini.file   <- opts$options$ini 
 ini <- read.graph(ini.file,  format="ncol", names=T, direct=T, weights="no")
 l <- analize.graph(ini, gs.edges, rv.edges)
 ini.edges   <- l$edges
 ini.in.gold <- l$in.both
-nom     <- c(nom, ini.file)
+if(opts$options$pretty) {
+    nom     <- c(nom, "Initial")
+} else {
+    nom     <- c(nom, sub(".ncol", "", ini.file))
+}
 n.vert  <- c(n.vert, l$vertices)
 n.edges <- c(n.edges, l$edges)
 in.gold <- c(in.gold, l$in.both)
@@ -80,7 +90,7 @@ c.in.gold <- c(c.in.gold, l$in.both/ini.in.gold*100)
 for(net.file in argv)  {
     l <- analize.graph(read.graph(net.file, format="ncol", names=T, direct=T, weights="yes"),
              gs.edges, rv.edges)
-      nom     <- c(nom, net.file)
+      nom     <- c(nom, sub(".ncol", "", net.file))
       n.vert  <- c(n.vert, l$vertices)
       n.edges <- c(n.edges, l$edges)
       in.gold <- c(in.gold, l$in.both)
@@ -90,4 +100,4 @@ for(net.file in argv)  {
 } 
 ans <- data.frame(Graph=nom, Vertices=n.vert, Edges=n.edges, `In gold`=in.gold,
       	    Precision=prec, `Cons Edges`=c.edges, `Cons Valid`=c.in.gold)  
-kable(ans, digits=2)
+kable(ans, digits=2, format.args=list(zero.print="-.--"))
