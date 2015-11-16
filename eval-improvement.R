@@ -57,7 +57,6 @@ rv.edges <- if(opts$options$undirected) split(gs.v.names[gs.edges[,1]], gs.v.nam
 gs.edges <- split(gs.v.names[gs.edges[,2]], gs.v.names[gs.edges[,1]])
 
 
-library(knitr)
 if(opts$options$pretty) {
     nom <- "Validated" 
 } else {
@@ -99,5 +98,10 @@ for(net.file in argv)  {
       c.in.gold <- c(c.in.gold, l$in.both/ini.in.gold*100)
 } 
 ans <- data.frame(Graph=nom, Vertices=n.vert, Edges=n.edges, `In gold`=in.gold,
-      	    Precision=prec, `Cons Edges`=c.edges, `Cons Valid`=c.in.gold)  
-kable(ans, digits=2, format.args=list(zero.print="-.--"))
+      	    Precision=prec, `Edges Kept`=c.edges, `Valid Kept`=c.in.gold)  
+if(opts$options$pretty) {
+	library(knitr)
+	kable(ans, digits=2, format.args=list(zero.print="-.--"))
+} else {
+	print(ans)
+}
